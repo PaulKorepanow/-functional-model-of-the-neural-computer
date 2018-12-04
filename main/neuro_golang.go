@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"runtime"
 	"strconv"
 	"time"
 )
@@ -163,6 +164,7 @@ func check(e error) {
 } // тут доделать
 //TODO тут доделать
 func main() {
+	PrintMemUsage()
 	inputVals := []string{}
 	var inputValsfloat []float64
 	expectedVals := []string{}
@@ -257,6 +259,7 @@ func main() {
 
 	neural_network.correctAnswer = 0
 	neural_network.incorrectAnswer = 0
+	PrintMemUsage()
 	start := time.Now()
 	for e := 0; e < epochs; e++ {
 		i1, err := os.Open("./education")
@@ -311,6 +314,7 @@ func main() {
 		}
 
 	}
+	PrintMemUsage()
 	i1, err = os.Open("./test")
 	check(err)
 	r = bufio.NewReader(i1)
@@ -362,4 +366,18 @@ func main() {
 	}
 	fmt.Println("correctAnswer:", neural_network.correctAnswer, "incorrectAnswer:", neural_network.incorrectAnswer)
 
+}
+
+func PrintMemUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
+	fmt.Printf("Alloc = %v MiB", bToMb(m.Alloc))
+	fmt.Printf("\tTotalAlloc = %v MiB", bToMb(m.TotalAlloc))
+	fmt.Printf("\tSys = %v MiB", bToMb(m.Sys))
+	fmt.Printf("\tNumGC = %v\n", m.NumGC)
+}
+
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
 }
