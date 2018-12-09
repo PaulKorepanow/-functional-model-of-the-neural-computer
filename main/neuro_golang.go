@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// Neuron base element arhitecture
 type Neuron struct {
 	weight []float64
 	input  []float64
@@ -23,7 +24,7 @@ func random() float64 {
 	return weight
 }
 
-func (n *Neuron) transfer_function(input []float64) {
+func (n *Neuron) transferFunction(input []float64) {
 	n.input = input
 	n.output = 0
 	for i := 0; i <= len(n.input)-1; i++ {
@@ -36,13 +37,14 @@ func (n Neuron) sigmoid() float64 {
 	return 1 / (1 + math.Exp(-n.output))
 }
 
+//NeuralNetwork with all attributes
 type NeuralNetwork struct {
-	learning_rate   float64
+	learningRate    float64
 	numNeurons      []int
 	archNeuronNet   [][]Neuron
 	hiddenOut       []float64
 	outputOut       []float64
-	weight_delta    [][]float64
+	weightDelta     [][]float64
 	err             []float64
 	errback         float64
 	correctAnswer   int
@@ -78,27 +80,25 @@ func (p *NeuralNetwork) init() {
 }
 
 type dataStream interface {
-	data_stream_right(inputVals []int, expectedVals []int, b bool)
+	dataStreamRight(inputVals []int, expectedVals []int, b bool)
 }
 
-func (n *NeuralNetwork) data_stream_right(inputVals []float64, expectedVals []float64, edu bool) {
-	for i := 0; i <= n.numNeurons[1]-1; i++ {
-		n.archNeuronNet[0][i].transfer_function(inputVals)
-		n.hiddenOut = append(n.hiddenOut, n.archNeuronNet[0][i].output)
+func (p *NeuralNetwork) dataStreamRight(inputVals []float64, expectedVals []float64, edu bool) {
+	for i := 0; i <= p.numNeurons[1]-1; i++ {
+		p.archNeuronNet[0][i].transferFunction(inputVals)
+		p.hiddenOut = append(p.hiddenOut, p.archNeuronNet[0][i].output)
 	}
-	for i := 0; i <= n.numNeurons[2]-1; i++ {
-		n.archNeuronNet[1][i].transfer_function(n.hiddenOut)
-		n.outputOut = append(n.outputOut, n.archNeuronNet[1][i].output)
+	for i := 0; i <= p.numNeurons[2]-1; i++ {
+		p.archNeuronNet[1][i].transferFunction(p.hiddenOut)
+		p.outputOut = append(p.outputOut, p.archNeuronNet[1][i].output)
 	}
-	n.hiddenOut = nil
+	p.hiddenOut = nil
 	if edu {
-		n.outputOut = nil
-		n.data_stream_back(inputVals, expectedVals)
+		p.outputOut = nil
+		p.dataStreamBack(inputVals, expectedVals)
 	} else {
 		var compereVal1 float64
 		var compereVal2 float64
-		compereVal1 = 0
-		compereVal2 = 0
 		index1 := 0
 		index2 := 0
 		for i1, v1 := range expectedVals {
@@ -108,51 +108,51 @@ func (n *NeuralNetwork) data_stream_right(inputVals []float64, expectedVals []fl
 
 			}
 		}
-		for i2, v2 := range n.outputOut {
+		for i2, v2 := range p.outputOut {
 			if v2 > compereVal2 {
 				compereVal2 = v2
 				index1 = i2
 			}
 		}
 		if index1 == index2 {
-			n.correctAnswer++
+			p.correctAnswer++
 		} else {
-			n.incorrectAnswer++
+			p.incorrectAnswer++
 		}
 	}
-	n.outputOut = n.outputOut[:0]
+	p.outputOut = p.outputOut[:0]
 
 }
 
-func (n *NeuralNetwork) data_stream_back(input []float64, expectedVals []float64) {
-	n.weight_delta = make([][]float64, 2)
-	for neuronOut := 0; neuronOut <= n.numNeurons[2]-1; neuronOut++ {
-		n.err[neuronOut] = n.archNeuronNet[1][neuronOut].output - expectedVals[neuronOut]
-		delta := n.err[neuronOut] * n.archNeuronNet[1][neuronOut].output * (1 - n.archNeuronNet[1][neuronOut].output)
-		n.weight_delta[0] = append(n.weight_delta[0], delta)
+func (p *NeuralNetwork) dataStreamBack(input []float64, expectedVals []float64) {
+	p.weightDelta = make([][]float64, 2)
+	for neuronOut := 0; neuronOut <= p.numNeurons[2]-1; neuronOut++ {
+		p.err[neuronOut] = p.archNeuronNet[1][neuronOut].output - expectedVals[neuronOut]
+		delta := p.err[neuronOut] * p.archNeuronNet[1][neuronOut].output * (1 - p.archNeuronNet[1][neuronOut].output)
+		p.weightDelta[0] = append(p.weightDelta[0], delta)
 
-		for neuronHid := 0; neuronHid <= n.numNeurons[1]-1; neuronHid++ {
-			n.archNeuronNet[1][neuronOut].weight[neuronHid] = n.archNeuronNet[1][neuronOut].weight[neuronHid] -
-				n.archNeuronNet[0][neuronHid].output*
-					n.learning_rate*
+		for neuronHid := 0; neuronHid <= p.numNeurons[1]-1; neuronHid++ {
+			p.archNeuronNet[1][neuronOut].weight[neuronHid] = p.archNeuronNet[1][neuronOut].weight[neuronHid] -
+				p.archNeuronNet[0][neuronHid].output*
+					p.learningRate*
 					delta
 
 		}
 	}
-	for neuronHid := 0; neuronHid <= n.numNeurons[1]-1; neuronHid++ {
-		n.errback = 0
-		for neuronOut := 0; neuronOut <= n.numNeurons[2]-1; neuronOut++ {
-			n.errback += n.archNeuronNet[1][neuronOut].weight[neuronHid] *
-				n.weight_delta[0][neuronOut]
+	for neuronHid := 0; neuronHid <= p.numNeurons[1]-1; neuronHid++ {
+		p.errback = 0
+		for neuronOut := 0; neuronOut <= p.numNeurons[2]-1; neuronOut++ {
+			p.errback += p.archNeuronNet[1][neuronOut].weight[neuronHid] *
+				p.weightDelta[0][neuronOut]
 		}
-		n.weight_delta[1] = append(n.weight_delta[1], n.errback*
-			n.archNeuronNet[0][neuronHid].output*
-			(1-n.archNeuronNet[0][neuronHid].output))
+		p.weightDelta[1] = append(p.weightDelta[1], p.errback*
+			p.archNeuronNet[0][neuronHid].output*
+			(1-p.archNeuronNet[0][neuronHid].output))
 		for neuronIn := 0; neuronIn <= len(input)-1; neuronIn++ {
-			n.archNeuronNet[0][neuronHid].weight[neuronIn] = n.archNeuronNet[0][neuronHid].weight[neuronIn] -
+			p.archNeuronNet[0][neuronHid].weight[neuronIn] = p.archNeuronNet[0][neuronHid].weight[neuronIn] -
 				input[neuronIn]*
-					n.learning_rate*
-					n.weight_delta[1][neuronHid]
+					p.learningRate*
+					p.weightDelta[1][neuronHid]
 		}
 	}
 }
@@ -161,17 +161,16 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
-} // тут доделать
-//TODO тут доделать
+}
+
 func main() {
 	PrintMemUsage()
 	inputVals := []string{}
 	var inputValsfloat []float64
 	expectedVals := []string{}
 	var expectedValsfloat []float64
-	hiddenLayers := 10
+	hiddenLayers := 5
 	epochs := 1000
-	var count int
 
 	i, err := ioutil.ReadFile("./education")
 	check(err)
@@ -198,14 +197,14 @@ func main() {
 		}
 	}
 
-	neural_network := NeuralNetwork{
-		learning_rate: 0.9,
+	neuralNetwork := NeuralNetwork{
+		learningRate: 0.9,
 		numNeurons: []int{countInpNeur,
 			hiddenLayers,
 			countExpNeur,
 		},
 	}
-	neural_network.init()
+	neuralNetwork.init()
 	i1, err := os.Open("./test")
 	check(err)
 	r := bufio.NewReader(i1)
@@ -249,16 +248,16 @@ func main() {
 			expectedValsfloat = append(expectedValsfloat, value)
 		}
 
-		neural_network.data_stream_right(inputValsfloat, expectedValsfloat, false)
+		neuralNetwork.dataStreamRight(inputValsfloat, expectedValsfloat, false)
 
 		inputVals, inputValsfloat = inputVals[:0], inputValsfloat[:0]
 		expectedVals, expectedValsfloat = expectedVals[:0], expectedValsfloat[:0]
 
 	}
-	fmt.Println("correctAnswer:", neural_network.correctAnswer, "incorrectAnswer:", neural_network.incorrectAnswer)
+	fmt.Println("correctAnswer:", neuralNetwork.correctAnswer, "incorrectAnswer:", neuralNetwork.incorrectAnswer)
 
-	neural_network.correctAnswer = 0
-	neural_network.incorrectAnswer = 0
+	neuralNetwork.correctAnswer = 0
+	neuralNetwork.incorrectAnswer = 0
 	PrintMemUsage()
 	start := time.Now()
 	for e := 0; e < epochs; e++ {
@@ -289,7 +288,6 @@ func main() {
 					}
 				}
 			}
-			count++
 			for _, val := range inputVals {
 				value, err := strconv.ParseFloat(val, 64)
 				if err != nil {
@@ -306,7 +304,7 @@ func main() {
 				expectedValsfloat = append(expectedValsfloat, value)
 			}
 
-			neural_network.data_stream_right(inputValsfloat, expectedValsfloat, true)
+			neuralNetwork.dataStreamRight(inputValsfloat, expectedValsfloat, true)
 
 			inputVals, inputValsfloat = inputVals[:0], inputValsfloat[:0]
 			expectedVals, expectedValsfloat = expectedVals[:0], expectedValsfloat[:0]
@@ -358,20 +356,20 @@ func main() {
 			expectedValsfloat = append(expectedValsfloat, value)
 		}
 
-		neural_network.data_stream_right(inputValsfloat, expectedValsfloat, false)
+		neuralNetwork.dataStreamRight(inputValsfloat, expectedValsfloat, false)
 
 		inputVals, inputValsfloat = inputVals[:0], inputValsfloat[:0]
 		expectedVals, expectedValsfloat = expectedVals[:0], expectedValsfloat[:0]
 
 	}
-	fmt.Println("correctAnswer:", neural_network.correctAnswer, "incorrectAnswer:", neural_network.incorrectAnswer)
-
+	fmt.Println("correctAnswer:", neuralNetwork.correctAnswer, "incorrectAnswer:", neuralNetwork.incorrectAnswer)
+	PrintMemUsage()
 }
 
+//PrintMemUsage using for tracking Memoty usage
 func PrintMemUsage() {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
 	fmt.Printf("Alloc = %v MiB", bToMb(m.Alloc))
 	fmt.Printf("\tTotalAlloc = %v MiB", bToMb(m.TotalAlloc))
 	fmt.Printf("\tSys = %v MiB", bToMb(m.Sys))
