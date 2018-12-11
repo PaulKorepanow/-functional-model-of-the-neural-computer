@@ -190,7 +190,6 @@ func main() {
 			}
 		}
 	}
-
 	neuralNetwork := NeuralNetwork{
 		learningRate: 0.9,
 		numNeurons: []int{countInpNeur,
@@ -201,6 +200,7 @@ func main() {
 	neuralNetwork.init()
 	i1, err := os.Open("./test")
 	check(err)
+	defer i1.Close()
 	r := bufio.NewReader(i1)
 	scanner := bufio.NewScanner(r)
 
@@ -257,6 +257,7 @@ func main() {
 	for e := 0; e < epochs; e++ {
 		i1, err := os.Open("./education")
 		check(err)
+		defer i1.Close()
 		r := bufio.NewReader(i1)
 		scanner := bufio.NewScanner(r)
 
@@ -309,6 +310,7 @@ func main() {
 	PrintMemUsage()
 	i1, err = os.Open("./test")
 	check(err)
+	defer i1.Close()
 	r = bufio.NewReader(i1)
 	scanner = bufio.NewScanner(r)
 
