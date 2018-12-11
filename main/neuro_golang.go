@@ -19,11 +19,6 @@ type Neuron struct {
 	output float64
 }
 
-func random() float64 {
-	weight := rand.Float64()
-	return weight
-}
-
 func (n *Neuron) transferFunction(input []float64) {
 	n.input = input
 	n.output = 0
@@ -64,7 +59,7 @@ func (p *NeuralNetwork) init() {
 	for ia := range p.archNeuronNet {
 		for j, ja := range p.archNeuronNet[ia] {
 			for ind := 0; ind <= weights[ia]-1; ind++ {
-				val := random()
+				val := rand.Float64()
 				ja.weight = append(ja.weight, val)
 			}
 			p.archNeuronNet[ia][j] = ja
@@ -73,7 +68,7 @@ func (p *NeuralNetwork) init() {
 
 	for ind := 0; ind <= neurons[1]; ind++ {
 		p.err = make([]float64, neurons[1])
-		val := random()
+		val := rand.Float64()
 		p.err = append(p.err, val)
 	}
 
@@ -174,7 +169,6 @@ func main() {
 
 	i, err := ioutil.ReadFile("./education")
 	check(err)
-
 	flag := true
 	countInpNeur := 0
 	countExpNeur := 0
